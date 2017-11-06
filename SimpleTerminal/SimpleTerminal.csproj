@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>db415578-9ef2-4f76-8a05-1ced6902ac3e</ProjectGuid>
+    <ProjectGuid>{DB415578-9EF2-4F76-8A05-1CED6902AC3E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SimpleTerminal</RootNamespace>
@@ -30,20 +30,28 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System"/>
-    
-    <Reference Include="System.Core"/>
-    <Reference Include="System.Xml.Linq"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    
-    
-    <Reference Include="System.Data"/>
-    
-    <Reference Include="System.Xml"/>
+    <Reference Include="Chapi.SerialPort.Communication">
+      <HintPath>..\..\..\Users\Carola\Documents\Visual Studio 2015\Projects\Chapi.SerialPort.Communication\Chapi.SerialPort.Communication\bin\Debug\Chapi.SerialPort.Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="Skidata.ElectronicPayment.BasicTerminal">
+      <HintPath>..\..\..\Program Files (x86)\SKIDATA\SKIDATA Electronic Payment SDK V5.1\Bin\Skidata.ElectronicPayment.BasicTerminal.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiData.ElectronicPaymentInterface, Version=5.1.0.1, Culture=neutral, PublicKeyToken=d49c6c683ad30fe9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\SKIDATA\SKIDATA Electronic Payment SDK V5.1\Bin\SkiData.ElectronicPaymentInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestMessage.cs" />
+    <Compile Include="ResponseMessage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -53,5 +61,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-
- </Project>
+</Project>
