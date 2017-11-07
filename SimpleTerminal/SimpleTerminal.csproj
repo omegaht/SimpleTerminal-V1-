@@ -33,9 +33,6 @@
     <Reference Include="Chapi.SerialPort.Communication">
       <HintPath>..\..\..\Users\Carola\Documents\Visual Studio 2015\Projects\Chapi.SerialPort.Communication\Chapi.SerialPort.Communication\bin\Debug\Chapi.SerialPort.Communication.dll</HintPath>
     </Reference>
-    <Reference Include="Skidata.ElectronicPayment.BasicTerminal">
-      <HintPath>..\..\..\Program Files (x86)\SKIDATA\SKIDATA Electronic Payment SDK V5.1\Bin\Skidata.ElectronicPayment.BasicTerminal.dll</HintPath>
-    </Reference>
     <Reference Include="SkiData.ElectronicPaymentInterface, Version=5.1.0.1, Culture=neutral, PublicKeyToken=d49c6c683ad30fe9, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Program Files (x86)\SKIDATA\SKIDATA Electronic Payment SDK V5.1\Bin\SkiData.ElectronicPaymentInterface.dll</HintPath>
@@ -48,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicTerminal.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestMessage.cs" />

@@ -17,10 +17,17 @@ namespace SimpleTerminal
         #region Public Members
         public SerialPortCom serialPort = new SerialPortCom();
         RequestMessage requestMessage;
+        ResponseMessage responseMessage;
         public bool isReady = false;
         #endregion
 
         #region IterminalInterface Methods
+        public override bool IsTerminalReady()
+        {
+            return true;
+        }
+
+
         public override TransactionResult Debit(TransactionData transactionData)
         {
             throw new NotImplementedException();
@@ -38,9 +45,47 @@ namespace SimpleTerminal
             //The terminal is really slow  it takes about 17 seconds to read the entire response.
             Thread.Sleep(20000);
             //responseMessage =
-            string trimmed = response.Replace("-", String.Empty);
+            string trimmed = response.Replace("-", string.Empty);
             this.OnTrace(TraceLevel.Info, "the message " + trimmed);
+            responseMessage = new ResponseMessage(trimmed);
+            bool validLRC = responseMessage.verifyResponseLRC(responseMessage);
 
+            if (!validLRC)
+            {
+                return txFailed;
+            }
+            else {
+
+            }
+            
+            // TESt only
+            //this.OnTrace(TraceLevel.Info, "host Response :" + responseMessage.totalResponse);
+            //this.OnTrace(TraceLevel.Info, "STX:" + responseMessage.STX);
+            //this.OnTrace(TraceLevel.Info, "messageType :" + responseMessage.messageType);
+            //this.OnTrace(TraceLevel.Info, "Status: " + responseMessage.messageStatus);
+            //this.OnTrace(TraceLevel.Info, "TLV length: " + responseMessage.lengthTLV);
+            //this.OnTrace(TraceLevel.Info, "the message : " + responseMessage.message);
+
+            //this.OnTrace(TraceLevel.Info, "auth Code : " + responseMessage.authorizationCode);
+            //this.OnTrace(TraceLevel.Info, "responseCode : " + responseMessage.responseCode);
+            //this.OnTrace(TraceLevel.Info, "transactionDate: " + responseMessage.transactionDate);
+            //this.OnTrace(TraceLevel.Info, "transactionTime: " + responseMessage.transactionTime);
+            //this.OnTrace(TraceLevel.Info, "voucherNumber: " + responseMessage.voucherNumber);
+            //this.OnTrace(TraceLevel.Info, "cardNumber: " + responseMessage.cardNumber);
+            //this.OnTrace(TraceLevel.Info, "cardHolderName: " + responseMessage.cardHolderName);
+            //this.OnTrace(TraceLevel.Info, "cardEntryMode: " + responseMessage.cardEntryMode);
+            //this.OnTrace(TraceLevel.Info, "numberPump: " + responseMessage.numberPump);
+            //this.OnTrace(TraceLevel.Info, "cardType: " + responseMessage.cardType);
+            //this.OnTrace(TraceLevel.Info, "currencyCode: " + responseMessage.currencyCode);
+            //this.OnTrace(TraceLevel.Info, "amountAuthorized: " + responseMessage.amountAuthorized);
+            //this.OnTrace(TraceLevel.Info, "softwareVersion: " + responseMessage.softwareVersion);
+            //this.OnTrace(TraceLevel.Info, "serialNumber :" + responseMessage.serialNumber);
+            //this.OnTrace(TraceLevel.Info, "E1 :" + responseMessage.E1);
+            //this.OnTrace(TraceLevel.Info, "E2 :" + responseMessage.E2);
+            //this.OnTrace(TraceLevel.Info, "ETX :" + responseMessage.ETX);
+            //this.OnTrace(TraceLevel.Info, "LRC :" + responseMessage.LRC);
+            //this.OnTrace(TraceLevel.Info, "EOT :" + responseMessage.EOT);
+            //
 
 
             return txFailed;
@@ -131,8 +176,9 @@ namespace SimpleTerminal
             // update the internal list with the card issuers
             cards.Clear();
             cards.Add(new CardIssuer("VISA"));
+            cards.Add(new CardIssuer("MC"));
             cards.Add(new CardIssuer("MAEST"));
-            // Se deve consultar las abreviaciones para mastercard. segun el manual.
+            // Se debe consultar las abreviaciones para mastercard. segun el manual.
             this.OnTrace(TraceLevel.Info, "Allowed Cards");
             foreach (CardIssuer item in cards)
             {
