@@ -8,24 +8,54 @@ namespace SimpleTerminal
 {
     class ResponseMessage
     {
-        
-        public  string ETX ;
+        #region Members  
+
+        /// <summary>
+        /// Control character, Acknowledge if all transmitted data has been received and the LRC verification succeeds. 
+        /// </summary>
         public string ACK { get; }
+
+        /// <summary>
+        /// Control character, start of text.
+        /// </summary>
+        public string STX;
+
+        /// <summary>
+        /// Control character, end of text.
+        /// </summary>
+        public  string ETX ;
+
+        /// <summary>
+        /// Longitudinal redundancy check.
+        /// </summary>
         public string LRC { get; }
+
+        /// <summary>
+        /// Control character, end of transmission.
+        /// </summary>
         public string EOT;
+
         /// <summary>
         /// The entire chain, from STX to ETX.
         /// </summary>
         public string message { get; set; }
 
-
-
-        
         public string totalResponse { get; set; }
-        public string STX;
+
+        /// <summary>
+        /// Message identifier.
+        /// </summary>
         public string messageType;
+
         public string messageStatus;
+
+        /// <summary>
+        /// Length of the TLV parameters.
+        /// </summary>
         public string lengthTLV;
+
+        #endregion
+
         #region TLV Members
         public string hostResponse;
         public string authorizationCode;
@@ -36,7 +66,7 @@ namespace SimpleTerminal
         public string cardNumber;
         public string cardHolderName;
         public string cardEntryMode;
-        public string numberPump;
+        //public string numberPump;
         public string cardType;
         public string currencyCode;
         public string amountAuthorized;
@@ -46,10 +76,14 @@ namespace SimpleTerminal
         public string E2;
         #endregion
 
+        /// <summary>
+        /// The constructor of the Class.
+        /// </summary>
+        /// <param name="data">Message received from the terminal.</param>
         public ResponseMessage(string data)
         {
 
-            message = data;
+            message = cleanMessage(data);
             totalResponse = data.Substring(0, 2);
             STX = data.Substring(2, 2);
             messageType = data.Substring(4, 6);
@@ -89,51 +123,61 @@ namespace SimpleTerminal
             EOT = data.Substring(position, longitud);
         }
 
-            #region Message conversion methods
-            public static byte calculateLRC(byte[] bytes)
+        #region Message conversion methods
+
+        public static byte calculateLRC(byte[] bytes)
+        {
+            byte LRC = 0;
+            for (int i = 0; i < bytes.Length; i++)
             {
-                byte LRC = 0;
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    LRC ^= bytes[i];
-                }
-                return LRC;
+                LRC ^= bytes[i];
             }
-            /// <summary>
-            /// Converts the exact string to a byte array.
-            /// </summary>
-            /// <param name="hex"></param>
-            /// <returns></returns>
-            public static byte[] StringToByteArray(String hex)
-            {
-                int NumberChars = hex.Length;
-                byte[] bytes = new byte[NumberChars / 2];
-                for (int i = 0; i < NumberChars - 1; i += 2)
-                    bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-                return bytes;
-            }
+            return LRC;
+        }
+
+        /// <summary>
+        /// Converts the exact string to a byte array.
+        /// </summary>
+        /// <param name="hex"></param>
+        /// <returns></returns>
+        public static byte[] StringToByteArray(String hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars - 1; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+        }
+
+        #endregion
+
+        #region String manipulation methods
+
+        /// <summary>
+        /// Replaces the '-' characters from the response of the terminal.
+        /// </summary>
+        /// <param name="message">The response from the terminal</param>
+        /// <returns></returns>
+        public string cleanMessage(string message)
+        {
+            string formatedMessage = message.Replace("-", string.Empty);
+            return formatedMessage;
+        }
+        
         #endregion
 
         public bool verifyResponseLRC(ResponseMessage m)
         {
             m.message = m.message.Substring(4);
             m.message = m.message.Substring(0, m.message.Length - 4);
-
-
             byte[] truncatedMessage = StringToByteArray(m.message);
-
             byte LRC = calculateLRC(truncatedMessage);
             byte[] responseLRC = StringToByteArray(this.LRC);
-
             if (LRC == responseLRC[0]) { 
                 return true;
             }
             return false;
         }
-
-
     }
-
-
 }
 

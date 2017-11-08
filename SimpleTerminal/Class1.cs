@@ -19,14 +19,23 @@ namespace SimpleTerminal
         RequestMessage requestMessage;
         ResponseMessage responseMessage;
         public bool isReady = false;
+        string response = null;
         #endregion
 
         #region IterminalInterface Methods
         public override bool IsTerminalReady()
         {
-            return true;
+            //Send the Enquiry character 0x05.
+            byte[] ENQ = { 0x05,0x03 };
+            byte LRC = calculateLRC(ENQ);
+            byte[] message = { 0x02, 0x05, 0x03, LRC };
+            serialPort.SendMessage(message);
+            Thread.Sleep(2000);
+            //If ACK, ther terminal is ready.
+            if(response == "06")
+                return true;
+            return false;
         }
-
 
         public override TransactionResult Debit(TransactionData transactionData)
         {
@@ -38,25 +47,24 @@ namespace SimpleTerminal
             TransactionFailedResult txFailed = new TransactionFailedResult(TransactionType.Debit, DateTime.Now);
             // perform the credit operation
             // ...
-
+            // clear the string.
+            response = null;
             requestMessage = new RequestMessage();
             requestMessage.createCompleteMessage(requestMessage);
             serialPort.SendMessage(requestMessage.finalMessage);
             //The terminal is really slow  it takes about 17 seconds to read the entire response.
             Thread.Sleep(20000);
-            //responseMessage =
-            string trimmed = response.Replace("-", string.Empty);
-            this.OnTrace(TraceLevel.Info, "the message " + trimmed);
-            responseMessage = new ResponseMessage(trimmed);
+            responseMessage = new ResponseMessage(response);
             bool validLRC = responseMessage.verifyResponseLRC(responseMessage);
+            this.OnTrace(TraceLevel.Info, "message: " + responseMessage.message);
+            return txFailed;
+            //if (!validLRC)
+            //{
+            //    return txFailed;
+            //}
+            //else {
 
-            if (!validLRC)
-            {
-                return txFailed;
-            }
-            else {
-
-            }
+            //}
             
             // TESt only
             //this.OnTrace(TraceLevel.Info, "host Response :" + responseMessage.totalResponse);
@@ -109,16 +117,6 @@ namespace SimpleTerminal
             //    return failedResult;
             //}
         }
-        string response = null;
-        private void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
-        {
-
-            response += BitConverter.ToString(args.Data);
-            //response.Trim(new char[] { '-', ' ' });
-
-        }
-
-
 
         public override bool BeginInstall(TerminalConfiguration termConfig)
         {
@@ -203,6 +201,25 @@ namespace SimpleTerminal
             else
                 this.OnTrace(TraceLevel.Info, "ComPort Disconnected!");
         }
-        #endregion   
+        #endregion
+
+        #region Our Event subscriptions
+        private void SerialPort_MessageReceived(object sender, MessageReceivedEventArgs args)
+        {
+            response += BitConverter.ToString(args.Data);
+        }
+        #endregion
+
+        #region Our Methods
+        public static byte calculateLRC(byte[] bytes)
+        {
+            byte LRC = 0;
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                LRC ^= bytes[i];
+            }
+            return LRC;
+        }
+        #endregion
     }
 }
