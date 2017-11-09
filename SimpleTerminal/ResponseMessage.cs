@@ -36,11 +36,11 @@ namespace SimpleTerminal
         public string EOT;
 
         /// <summary>
-        /// The entire chain, from STX to ETX.
+        /// The entire chain, from Message Type (C54) to ETX.
         /// </summary>
         public string message { get; set; }
 
-        public string totalResponse { get; set; }
+        public string terminalResponse { get; set; }
 
         /// <summary>
         /// Message identifier.
@@ -83,11 +83,14 @@ namespace SimpleTerminal
         public ResponseMessage(string data)
         {
 
-            message = cleanMessage(data);
-            totalResponse = data.Substring(0, 2);
-            STX = data.Substring(2, 2);
-            messageType = data.Substring(4, 6);
-            messageStatus = data.Substring(10, 4);
+            message = data;
+            terminalResponse = message.Substring(0, 2);
+            STX = message.Substring(2, 2);
+            messageType = message.Substring(4, 6);
+            messageStatus = message.Substring(10, 4);
+
+
+
             lengthTLV = data.Substring(14, 4);
             hostResponse = data.Substring(18, 6);
             authorizationCode = data.Substring(24, 16);
@@ -150,19 +153,20 @@ namespace SimpleTerminal
         }
 
         #endregion
-
         #region String manipulation methods
+        public void loadMessageParameters(string message) {
+            // These are fixed so a substring will be suficient.
+            terminalResponse = message.Substring(0, 2);
+            STX = message.Substring(2, 2);
+            messageType = message.Substring(4, 6);
+            messageStatus = message.Substring(10, 4);
+            ETX = message.Substring(message.Length - 6, 2);
+            LRC = message.Substring(message.Length - 4, 2);
+            EOT = 
 
-        /// <summary>
-        /// Replaces the '-' characters from the response of the terminal.
-        /// </summary>
-        /// <param name="message">The response from the terminal</param>
-        /// <returns></returns>
-        public string cleanMessage(string message)
-        {
-            string formatedMessage = message.Replace("-", string.Empty);
-            return formatedMessage;
+
         }
+
         
         #endregion
 

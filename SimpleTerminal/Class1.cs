@@ -41,81 +41,70 @@ namespace SimpleTerminal
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// Performs the Debit operation.
+        /// </summary>
+        /// <param name="transactionData"></param>
+        /// <param name="card"></param>
+        /// <returns></returns>
         public override TransactionResult Debit(TransactionData transactionData, Card card)
         {
-            TransactionFailedResult txFailed = new TransactionFailedResult(TransactionType.Debit, DateTime.Now);
-            // perform the credit operation
-            // ...
-            // clear the string.
+            #region Perform debit operation
+            // clear the response.
             response = null;
+            // create request message.
             requestMessage = new RequestMessage();
             requestMessage.createCompleteMessage(requestMessage);
+            // send message to the terminal.
             serialPort.SendMessage(requestMessage.finalMessage);
-            //The terminal is really slow  it takes about 17 seconds to read the entire response.
+            // wait for ther terminal to reply.
             Thread.Sleep(20000);
-            responseMessage = new ResponseMessage(response);
+            // create the response message.
+            string trimmed = cleanMessage(response);
+            responseMessage = new ResponseMessage(trimmed);
+            // verify if LRC is valid.
             bool validLRC = responseMessage.verifyResponseLRC(responseMessage);
-            this.OnTrace(TraceLevel.Info, "message: " + responseMessage.message);
-            return txFailed;
-            //if (!validLRC)
-            //{
-            //    return txFailed;
-            //}
-            //else {
+            #endregion
 
-            //}
-            
             // TESt only
-            //this.OnTrace(TraceLevel.Info, "host Response :" + responseMessage.totalResponse);
-            //this.OnTrace(TraceLevel.Info, "STX:" + responseMessage.STX);
-            //this.OnTrace(TraceLevel.Info, "messageType :" + responseMessage.messageType);
-            //this.OnTrace(TraceLevel.Info, "Status: " + responseMessage.messageStatus);
-            //this.OnTrace(TraceLevel.Info, "TLV length: " + responseMessage.lengthTLV);
-            //this.OnTrace(TraceLevel.Info, "the message : " + responseMessage.message);
+            this.OnTrace(TraceLevel.Info, "host Response :" + responseMessage.terminalResponse);
+            this.OnTrace(TraceLevel.Info, "STX:" + responseMessage.STX);
+            this.OnTrace(TraceLevel.Info, "messageType :" + responseMessage.messageType);
+            this.OnTrace(TraceLevel.Info, "Status: " + responseMessage.messageStatus);
+            this.OnTrace(TraceLevel.Info, "TLV length: " + responseMessage.lengthTLV);
 
-            //this.OnTrace(TraceLevel.Info, "auth Code : " + responseMessage.authorizationCode);
-            //this.OnTrace(TraceLevel.Info, "responseCode : " + responseMessage.responseCode);
-            //this.OnTrace(TraceLevel.Info, "transactionDate: " + responseMessage.transactionDate);
-            //this.OnTrace(TraceLevel.Info, "transactionTime: " + responseMessage.transactionTime);
-            //this.OnTrace(TraceLevel.Info, "voucherNumber: " + responseMessage.voucherNumber);
-            //this.OnTrace(TraceLevel.Info, "cardNumber: " + responseMessage.cardNumber);
-            //this.OnTrace(TraceLevel.Info, "cardHolderName: " + responseMessage.cardHolderName);
-            //this.OnTrace(TraceLevel.Info, "cardEntryMode: " + responseMessage.cardEntryMode);
-            //this.OnTrace(TraceLevel.Info, "numberPump: " + responseMessage.numberPump);
-            //this.OnTrace(TraceLevel.Info, "cardType: " + responseMessage.cardType);
-            //this.OnTrace(TraceLevel.Info, "currencyCode: " + responseMessage.currencyCode);
-            //this.OnTrace(TraceLevel.Info, "amountAuthorized: " + responseMessage.amountAuthorized);
-            //this.OnTrace(TraceLevel.Info, "softwareVersion: " + responseMessage.softwareVersion);
-            //this.OnTrace(TraceLevel.Info, "serialNumber :" + responseMessage.serialNumber);
-            //this.OnTrace(TraceLevel.Info, "E1 :" + responseMessage.E1);
-            //this.OnTrace(TraceLevel.Info, "E2 :" + responseMessage.E2);
-            //this.OnTrace(TraceLevel.Info, "ETX :" + responseMessage.ETX);
-            //this.OnTrace(TraceLevel.Info, "LRC :" + responseMessage.LRC);
-            //this.OnTrace(TraceLevel.Info, "EOT :" + responseMessage.EOT);
-            //
+            this.OnTrace(TraceLevel.Info, "auth Code : " + responseMessage.authorizationCode);
+            this.OnTrace(TraceLevel.Info, "responseCode : " + responseMessage.responseCode);
+            this.OnTrace(TraceLevel.Info, "transactionDate: " + responseMessage.transactionDate);
+            this.OnTrace(TraceLevel.Info, "transactionTime: " + responseMessage.transactionTime);
+            this.OnTrace(TraceLevel.Info, "voucherNumber: " + responseMessage.voucherNumber);
+            this.OnTrace(TraceLevel.Info, "cardNumber: " + responseMessage.cardNumber);
+            this.OnTrace(TraceLevel.Info, "cardHolderName: " + responseMessage.cardHolderName);
+            this.OnTrace(TraceLevel.Info, "cardEntryMode: " + responseMessage.cardEntryMode);
+
+            this.OnTrace(TraceLevel.Info, "cardType: " + responseMessage.cardType);
+            this.OnTrace(TraceLevel.Info, "currencyCode: " + responseMessage.currencyCode);
+            this.OnTrace(TraceLevel.Info, "amountAuthorized: " + responseMessage.amountAuthorized);
+            this.OnTrace(TraceLevel.Info, "softwareVersion: " + responseMessage.softwareVersion);
+            this.OnTrace(TraceLevel.Info, "serialNumber :" + responseMessage.serialNumber);
+            this.OnTrace(TraceLevel.Info, "E1 :" + responseMessage.E1);
+            this.OnTrace(TraceLevel.Info, "E2 :" + responseMessage.E2);
+            this.OnTrace(TraceLevel.Info, "ETX :" + responseMessage.ETX);
+            this.OnTrace(TraceLevel.Info, "LRC :" + responseMessage.LRC);
+            this.OnTrace(TraceLevel.Info, "EOT :" + responseMessage.EOT);
+
+            if (!validLRC)
+            {
+                TransactionFailedResult txFailed = new TransactionFailedResult(TransactionType.Debit, DateTime.Now);
+                return txFailed;
+            }
+            else
+            {
+                TransactionDoneResult txSucceed = new TransactionDoneResult(TransactionType.Debit, DateTime.Now);
+                return txSucceed;
+            }
 
 
-            return txFailed;
-
-
-            // create the result data
-            //if (creditOk)
-            //{
-            //    // handling for transaction was successful (set amount and timestamp)
-            //    TransactionDoneResult doneResult = new TransactionDoneResult(TransactionType.Credit, DateTime.Now);
-            //    doneResult.ServiceCode = "SC4711";
-            //    doneResult.TransactionNumber = "AZ12345678";
-            //    return doneResult;
-            //}
-            //else
-            //{
-            //    // handling for transaction failed
-            //    TransactionFailedResult failedResult = new TransactionFailedResult(TransactionType.Credit);
-            //    failedResult.OperatorDisplayText = "Can't read card, try again!";
-            //    failedResult.RejectionCode = 1;    // "Can't read card"
-            //    return failedResult;
-            //}
         }
 
         public override bool BeginInstall(TerminalConfiguration termConfig)
@@ -210,7 +199,7 @@ namespace SimpleTerminal
         }
         #endregion
 
-        #region Our Methods
+
         public static byte calculateLRC(byte[] bytes)
         {
             byte LRC = 0;
@@ -220,6 +209,19 @@ namespace SimpleTerminal
             }
             return LRC;
         }
+        #region String manipulation methods
+
+        /// <summary>
+        /// Replaces the '-' characters from the response of the terminal.
+        /// </summary>
+        /// <param name="message">The response from the terminal</param>
+        /// <returns></returns>
+        public string cleanMessage(string message)
+        {
+            string formatedMessage = message.Replace("-", string.Empty);
+            return formatedMessage;
+        }
         #endregion
+
     }
 }

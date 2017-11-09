@@ -114,15 +114,11 @@ namespace SimpleTerminal
 
         public void createCompleteMessage(RequestMessage m)
         {
-            // no STX or ETX for LRC calculation...
-            // no STX = 89 , no ETX = C2, no STX + ETX = 92... no clue abut this. should be 91.
-
+            // no STX for LRC calculation...
             byte[] truncatedMessage = StringToByteArray(m.message.Substring(2));
             byte LRC = calculateLRC(truncatedMessage);
-
             //LRCA = calculateLRC(truncatedMessage);
             byte[] tempMessage = StringToByteArray(m.message);
-
             //convert it to string hexadecimal representation and append it to the final message.
             m.LRC = Convert.ToString(int.Parse(LRC.ToString()), 16);
             byte[] finalLRC = StringToByteArray(this.LRC);
@@ -132,10 +128,6 @@ namespace SimpleTerminal
             for (int i = 0; i < tempMessage.Length; i++)
                 m.finalMessage[i] = tempMessage[i];
             m.finalMessage[tempMessage.Length] = finalLRC[0];
-
-
-
-
         }
 
         #region Message conversion methods
