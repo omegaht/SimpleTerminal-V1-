@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading;
 using SkiData.ElectronicPayment;
@@ -25,6 +26,8 @@ namespace SimpleTerminal
         #region IterminalInterface Methods
         public override bool IsTerminalReady()
         {
+            
+            this.OnTrace(TraceLevel.Info, "the message on is ready" + response);
             //Send the Enquiry character 0x05.
             byte[] ENQ = { 0x05,0x03 };
             byte LRC = calculateLRC(ENQ);
@@ -32,9 +35,16 @@ namespace SimpleTerminal
             serialPort.SendMessage(message);
             Thread.Sleep(2000);
             //If ACK, ther terminal is ready.
-            if(response == "06")
+            if (response == "06")
+            {
+                // TODO EVENT RAISE.
+                response = null;
                 return true;
-            return false;
+            }
+            else {
+                response = null;
+                return false;
+            }
         }
 
         public override TransactionResult Debit(TransactionData transactionData)
@@ -52,9 +62,12 @@ namespace SimpleTerminal
             #region Perform debit operation
             // clear the response.
             response = null;
+            // convert the Amount to the terminal format.
+            string amount = convertAmount(transactionData.Amount);
             // create request message.
-            requestMessage = new RequestMessage();
+            requestMessage = new RequestMessage(amount);
             requestMessage.createCompleteMessage(requestMessage);
+            //this.OnTrace(TraceLevel.Info, "Req message: " + requestMessage.message);
             // send message to the terminal.
             serialPort.SendMessage(requestMessage.finalMessage);
             // wait for ther terminal to reply.
@@ -62,11 +75,13 @@ namespace SimpleTerminal
             // create the response message.
             string trimmed = cleanMessage(response);
             responseMessage = new ResponseMessage(trimmed);
+            // clear response buffer.
+            response = null;
             // verify if LRC is valid.
             bool validLRC = responseMessage.verifyResponseLRC(responseMessage);
             #endregion
 
-            // TESt only
+            //// TESt only
             this.OnTrace(TraceLevel.Info, "host Response :" + responseMessage.terminalResponse);
             this.OnTrace(TraceLevel.Info, "STX:" + responseMessage.STX);
             this.OnTrace(TraceLevel.Info, "messageType :" + responseMessage.messageType);
@@ -93,6 +108,7 @@ namespace SimpleTerminal
             this.OnTrace(TraceLevel.Info, "LRC :" + responseMessage.LRC);
             this.OnTrace(TraceLevel.Info, "EOT :" + responseMessage.EOT);
 
+
             if (!validLRC)
             {
                 TransactionFailedResult txFailed = new TransactionFailedResult(TransactionType.Debit, DateTime.Now);
@@ -106,7 +122,11 @@ namespace SimpleTerminal
 
 
         }
-
+        /// <summary>
+        /// Connects with the terminal.
+        /// </summary>
+        /// <param name="termConfig"></param>
+        /// <returns></returns>
         public override bool BeginInstall(TerminalConfiguration termConfig)
         {
             this.OnTrace(TraceLevel.Info, "BasicTerminal.BeginInstall");
@@ -220,6 +240,22 @@ namespace SimpleTerminal
         {
             string formatedMessage = message.Replace("-", string.Empty);
             return formatedMessage;
+        }
+        /// <summary>
+        /// APM amaunt to hexa string format.
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <returns></returns>
+        public string convertAmount(decimal amount) {
+            // multiply by 100 to avoid decimal point.
+            int totalInt = Convert.ToInt32(amount*100);
+            // convert to int32
+            string totalString = totalInt.ToString();
+            // to string hex 
+            string aux = int.Parse(totalString).ToString("X8");
+            //this.OnTrace(TraceLevel.Info, "the string amount " + aux);
+            string result = "C104" + aux;
+            return result;
         }
         #endregion
 

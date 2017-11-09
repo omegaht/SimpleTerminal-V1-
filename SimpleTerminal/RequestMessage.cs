@@ -30,7 +30,7 @@ namespace SimpleTerminal
         private string transactionTime;
         private string transactionType;
         private string voucherNumber;
-        private string amount;
+        public string amount { get; }
         private string cashBack = "C10400000000";
         private string tipAmount = "C10400000000";
         private string amountUSD;

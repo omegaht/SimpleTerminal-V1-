@@ -88,9 +88,6 @@ namespace SimpleTerminal
             STX = message.Substring(2, 2);
             messageType = message.Substring(4, 6);
             messageStatus = message.Substring(10, 4);
-
-
-
             lengthTLV = data.Substring(14, 4);
             hostResponse = data.Substring(18, 6);
             authorizationCode = data.Substring(24, 16);
@@ -154,18 +151,7 @@ namespace SimpleTerminal
 
         #endregion
         #region String manipulation methods
-        public void loadMessageParameters(string message) {
-            // These are fixed so a substring will be suficient.
-            terminalResponse = message.Substring(0, 2);
-            STX = message.Substring(2, 2);
-            messageType = message.Substring(4, 6);
-            messageStatus = message.Substring(10, 4);
-            ETX = message.Substring(message.Length - 6, 2);
-            LRC = message.Substring(message.Length - 4, 2);
-            EOT = 
 
-
-        }
 
         
         #endregion
