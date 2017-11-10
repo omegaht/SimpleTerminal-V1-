@@ -26,7 +26,6 @@ namespace SimpleTerminal
         #region IterminalInterface Methods
         public override bool IsTerminalReady()
         {
-            
             this.OnTrace(TraceLevel.Info, "the message on is ready" + response);
             //Send the Enquiry character 0x05.
             byte[] ENQ = { 0x05,0x03 };
@@ -39,10 +38,12 @@ namespace SimpleTerminal
             {
                 // TODO EVENT RAISE.
                 response = null;
+                OnTerminalReadyChanged();
                 return true;
             }
             else {
                 response = null;
+                OnTerminalReadyChanged();
                 return false;
             }
         }
@@ -59,6 +60,7 @@ namespace SimpleTerminal
         /// <returns></returns>
         public override TransactionResult Debit(TransactionData transactionData, Card card)
         {
+           
             #region Perform debit operation
             // clear the response.
             response = null;
@@ -81,34 +83,9 @@ namespace SimpleTerminal
             bool validLRC = responseMessage.verifyResponseLRC(responseMessage);
             #endregion
 
-            //// TESt only
-            this.OnTrace(TraceLevel.Info, "host Response :" + responseMessage.terminalResponse);
-            this.OnTrace(TraceLevel.Info, "STX:" + responseMessage.STX);
-            this.OnTrace(TraceLevel.Info, "messageType :" + responseMessage.messageType);
-            this.OnTrace(TraceLevel.Info, "Status: " + responseMessage.messageStatus);
-            this.OnTrace(TraceLevel.Info, "TLV length: " + responseMessage.lengthTLV);
-
-            this.OnTrace(TraceLevel.Info, "auth Code : " + responseMessage.authorizationCode);
-            this.OnTrace(TraceLevel.Info, "responseCode : " + responseMessage.responseCode);
-            this.OnTrace(TraceLevel.Info, "transactionDate: " + responseMessage.transactionDate);
-            this.OnTrace(TraceLevel.Info, "transactionTime: " + responseMessage.transactionTime);
-            this.OnTrace(TraceLevel.Info, "voucherNumber: " + responseMessage.voucherNumber);
-            this.OnTrace(TraceLevel.Info, "cardNumber: " + responseMessage.cardNumber);
-            this.OnTrace(TraceLevel.Info, "cardHolderName: " + responseMessage.cardHolderName);
-            this.OnTrace(TraceLevel.Info, "cardEntryMode: " + responseMessage.cardEntryMode);
-
-            this.OnTrace(TraceLevel.Info, "cardType: " + responseMessage.cardType);
-            this.OnTrace(TraceLevel.Info, "currencyCode: " + responseMessage.currencyCode);
-            this.OnTrace(TraceLevel.Info, "amountAuthorized: " + responseMessage.amountAuthorized);
-            this.OnTrace(TraceLevel.Info, "softwareVersion: " + responseMessage.softwareVersion);
-            this.OnTrace(TraceLevel.Info, "serialNumber :" + responseMessage.serialNumber);
-            this.OnTrace(TraceLevel.Info, "E1 :" + responseMessage.E1);
-            this.OnTrace(TraceLevel.Info, "E2 :" + responseMessage.E2);
-            this.OnTrace(TraceLevel.Info, "ETX :" + responseMessage.ETX);
-            this.OnTrace(TraceLevel.Info, "LRC :" + responseMessage.LRC);
-            this.OnTrace(TraceLevel.Info, "EOT :" + responseMessage.EOT);
-
-
+            
+            #region Create Result Data
+            // if debit operation not OK.
             if (!validLRC)
             {
                 TransactionFailedResult txFailed = new TransactionFailedResult(TransactionType.Debit, DateTime.Now);
@@ -116,11 +93,19 @@ namespace SimpleTerminal
             }
             else
             {
-                TransactionDoneResult txSucceed = new TransactionDoneResult(TransactionType.Debit, DateTime.Now);
-                return txSucceed;
+                //If valid
+                if (responseMessage.hostResponse == "C10100")
+                {
+                    TransactionDoneResult txSucceed = new TransactionDoneResult(TransactionType.Debit, DateTime.Now);
+                    txSucceed.Amount = responseMessage.amountAuthorized; // requestMessage.amount; ???
+                    txSucceed.AuthorizationNumber = responseMessage.authorizationCode;
+                    //txSucceed.ServiceCode
+
+                    return txSucceed;
+                }
+             
             }
-
-
+            #endregion
         }
         /// <summary>
         /// Connects with the terminal.
@@ -219,7 +204,7 @@ namespace SimpleTerminal
         }
         #endregion
 
-
+        #region String manipulation methods
         public static byte calculateLRC(byte[] bytes)
         {
             byte LRC = 0;
@@ -229,7 +214,6 @@ namespace SimpleTerminal
             }
             return LRC;
         }
-        #region String manipulation methods
 
         /// <summary>
         /// Replaces the '-' characters from the response of the terminal.

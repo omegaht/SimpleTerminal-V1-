@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace SimpleTerminal
 {
@@ -26,8 +27,8 @@ namespace SimpleTerminal
         public byte[] finalMessage;
 
         #region TLV Members
-        private string transactionDate;
-        private string transactionTime;
+        public string transactionDate;
+        public string transactionTime;
         private string transactionType;
         private string voucherNumber;
         public string amount { get; }
@@ -51,16 +52,22 @@ namespace SimpleTerminal
         public RequestMessage(string amount = "C104000015B3")
         {
             #region Load TLV parameters
-            //DateTime now = DateTime.Now;
-            //transactionDate = FormatDate(now);
-            //transactionTime = FormatTime(now);
-            transactionDate = "C103101231";
-            transactionTime = "C103164459";
+            DateTime now = DateTime.Now;
+            transactionDate = FormatDate(now);
+            transactionTime = FormatTime(now);
+            //transactionDate = "C103101231";
+            //transactionTime = "C103164459";
             transactionType = "C10101";
-            voucherNumber = "C10412345678";
+            voucherNumber = "C10100";
             this.amount = amount;
+            cashBack = "C10400000000";
+            tipAmount = "C10400000000";
             amountUSD = "C104000022B8";
+            cashBackUSD = "C10400000000";
+            tipAmountUSD = "C10400000000";
+            
             currencyIndex = "C10101";
+            //numberPump = ""
             authorizationCode = "C10100";
             merchantDecision = "C10100";
             ECRIDPOS = "C1143030303030303030303130333031353131393030";
@@ -156,12 +163,18 @@ namespace SimpleTerminal
         #endregion
 
         #region String Manipulation methods
+        
         public string FormatDate(DateTime now)
         {
-            string date = now.GetDateTimeFormats('d')[0];
-            string[] splitedDate = date.Split('/');
-            string formatedDate = splitedDate[2].Substring(2) + splitedDate[0] + splitedDate[1];
-            return formatedDate;
+            CultureInfo culture = new CultureInfo("ja-JP");
+            string theDate = now.ToString("d", culture);
+            string[] splitedDate = theDate.Split('/');
+            string formatedDate = splitedDate[0].Substring(2,2) + splitedDate[1] + splitedDate[2];
+            
+            
+            return "C103" + formatedDate;
+            
+
         }
         public string FormatTime(DateTime now)
         {
@@ -176,7 +189,7 @@ namespace SimpleTerminal
                 hour = splitedTimeAgain[0];
 
             string formatedTime = hour + splitedTimeAgain[1] + splitedTimeAgain[2];
-            return formatedTime;
+            return "C103" + formatedTime;
         }
         #endregion
     }
